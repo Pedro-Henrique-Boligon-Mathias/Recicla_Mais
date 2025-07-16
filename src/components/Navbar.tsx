@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User, AuthChangeEvent, Session } from "@supabase/supabase-js";
+import { Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -13,7 +14,30 @@ export default function Navbar() {
   const [userName, setUserName] = useState<string>("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Links de navegação
+  const navLinks = [
+    { href: "/", label: "Início" },
+    { href: "/mapa", label: "Mapa" },
+    { href: "/calculadora", label: "Calculadora" },
+    { href: "/marketplace", label: "Marketplace" },
+    { href: "/dicas", label: "Dicas" },
+  ];
+
+  // Fechar menu ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Função para buscar dados do usuário
   const fetchUserData = async (currentUser: User | null) => {
@@ -102,7 +126,7 @@ export default function Navbar() {
 
   // Atualizar dados quando o user muda
   useEffect(() => {
-    if (user !== null) { // Só executa se user já foi inicializado
+    if (user !== null) {
       fetchUserData(user);
     }
   }, [user]);
@@ -174,95 +198,192 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-700/90 backdrop-blur-md rounded-full shadow-lg px-6 py-3 w-[95%] max-w-6xl mx-auto">
-      <div className="flex items-center justify-between">
-        {/* Logo e Links */}
-        <div className="flex items-center gap-6">
-          <Link 
-            href="/" 
-            className="text-xl font-bold text-white hover:opacity-80 transition-opacity"
-          >
-            ♻️ Recicla<span className="text-lime-300">+</span>
-          </Link>
-          <div className="hidden md:flex gap-2">
-            <Link href="/" className={linkStyle("/")}>Início</Link>
-            <Link href="/mapa" className={linkStyle("/mapa")}>Mapa</Link>
-            <Link href="/calculadora" className={linkStyle("/calculadora")}>Calculadora</Link>
-            <Link href="/marketplace" className={linkStyle("/marketplace")}>Marketplace</Link>
+    <>
+      {/* Navbar Principal */}
+      <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-700/90 backdrop-blur-md rounded-full shadow-lg px-6 py-3 w-[95%] max-w-6xl mx-auto">
+        <div className="flex items-center justify-between">
+          {/* Logo e Links (desktop) */}
+          <div className="flex items-center gap-6">
+            <Link 
+              href="/" 
+              className="text-xl font-bold text-white hover:opacity-80 transition-opacity"
+            >
+              ♻️ Recicla<span className="text-lime-300">+</span>
+            </Link>
+            <div className="hidden md:flex gap-2">
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.href} 
+                  href={link.href} 
+                  className={linkStyle(link.href)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Botão Mobile */}
+          <div className="flex items-center gap-4">
+            <button 
+              className="md:hidden text-white p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+
+            {/* Área de Perfil / Auth */}
+            <div className="hidden md:flex items-center gap-4">
+              {user ? (
+                <>
+                  <div className="relative group">
+                    {fotoUrl ? (
+                      <img
+                        src={fotoUrl}
+                        alt="Perfil"
+                        className="w-8 h-8 rounded-full border-2 border-white cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => fileInputRef.current?.click()}
+                        title="Clique para trocar a foto"
+                      />
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-8 h-8 rounded-full bg-white text-green-700 flex items-center justify-center text-sm font-semibold cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        {userName.charAt(0).toUpperCase() || "?"}
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      ref={fileInputRef}
+                      onChange={handleFotoChange}
+                    />
+                  </div>
+                  <span className="text-sm text-white hidden sm:block truncate max-w-[120px]">
+                    Olá, <strong>{userName}</strong>
+                  </span>
+                  <button
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      router.refresh();
+                    }}
+                    className="text-sm px-3 py-1 rounded-full bg-white text-green-800 hover:bg-gray-100 transition whitespace-nowrap"
+                  >
+                    Sair
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className={`text-sm px-4 py-1 rounded-full transition whitespace-nowrap ${
+                      pathname === "/login"
+                        ? "bg-white/90 text-green-800"
+                        : "bg-white text-green-800 hover:bg-gray-100"
+                    }`}
+                  >
+                    Entrar
+                  </Link>
+                  <Link
+                    href="/cadastro"
+                    className={`text-sm px-4 py-1 rounded-full border transition whitespace-nowrap ${
+                      pathname === "/cadastro"
+                        ? "bg-white/10 border-white text-white"
+                        : "border-white text-white hover:bg-white/10"
+                    }`}
+                  >
+                    Cadastrar
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
+      </nav>
 
-        {/* Área de Perfil / Auth */}
-        <div className="flex items-center gap-4">
-          {user ? (
-            <>
-              <div className="relative group">
-                {fotoUrl ? (
-                  <img
-                    src={fotoUrl}
-                    alt="Perfil"
-                    className="w-8 h-8 rounded-full border-2 border-white cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => fileInputRef.current?.click()}
-                    title="Clique para trocar a foto"
-                  />
-                ) : (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-8 h-8 rounded-full bg-white text-green-700 flex items-center justify-center text-sm font-semibold cursor-pointer hover:opacity-80 transition-opacity"
-                  >
-                    {userName.charAt(0).toUpperCase() || "?"}
+      {/* Menu Mobile */}
+      {mobileMenuOpen && (
+        <div 
+          ref={mobileMenuRef}
+          className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 bg-green-700/95 backdrop-blur-md rounded-xl shadow-lg w-[90%] max-w-md py-4 px-6"
+        >
+          <div className="flex flex-col space-y-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-4 py-3 rounded-lg text-white font-medium ${
+                  pathname === link.href ? 'bg-white/20' : 'hover:bg-white/10'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+
+            <div className="border-t border-white/20 pt-4 mt-2">
+              {user ? (
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-center space-x-3 px-4 py-2">
+                    {fotoUrl ? (
+                      <img
+                        src={fotoUrl}
+                        alt="Perfil"
+                        className="w-10 h-10 rounded-full border-2 border-white"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-white text-green-700 flex items-center justify-center text-sm font-semibold">
+                        {userName.charAt(0).toUpperCase() || "?"}
+                      </div>
+                    )}
+                    <span className="text-white">
+                      Olá, <strong>{userName}</strong>
+                    </span>
                   </div>
-                )}
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                  Trocar foto
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  ref={fileInputRef}
-                  onChange={handleFotoChange}
-                />
-              </div>
-              <span className="text-sm text-white hidden sm:block truncate max-w-[120px]">
-                Olá, <strong>{userName}</strong>
-              </span>
-              <button
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  router.refresh();
-                }}
-                className="text-sm px-3 py-1 rounded-full bg-white text-green-800 hover:bg-gray-100 transition whitespace-nowrap"
-              >
-                Sair
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className={`text-sm px-4 py-1 rounded-full transition whitespace-nowrap ${
-                  pathname === "/login"
-                    ? "bg-white/90 text-green-800"
-                    : "bg-white text-green-800 hover:bg-gray-100"
-                }`}
-              >
-                Entrar
-              </Link>
-              <Link
-                href="/cadastro"
-                className={`text-sm px-4 py-1 rounded-full border transition whitespace-nowrap ${
-                  pathname === "/cadastro"
-                    ? "bg-white/10 border-white text-white"
-                    : "border-white text-white hover:bg-white/10"
-                }`}
-              >
-                Cadastrar
-              </Link>
-            </>
-          )}
+                  <button
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      router.refresh();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="px-4 py-3 rounded-lg bg-white text-green-800 font-medium text-center"
+                  >
+                    Sair
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/login"
+                    className={`px-4 py-3 rounded-lg text-center font-medium ${
+                      pathname === "/login"
+                        ? "bg-white/90 text-green-800"
+                        : "bg-white text-green-800 hover:bg-gray-100"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Entrar
+                  </Link>
+                  <Link
+                    href="/cadastro"
+                    className={`px-4 py-3 rounded-lg border text-center font-medium ${
+                      pathname === "/cadastro"
+                        ? "bg-white/10 border-white text-white"
+                        : "border-white text-white hover:bg-white/10"
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Cadastrar
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-    </nav>
+      )}
+    </>
   );
 }
