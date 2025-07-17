@@ -20,7 +20,17 @@ export const metadata: Metadata = {
   title: "Recicla +",
   description:
     "Aplicativo para escolhas sustentáveis com mapa de ecopontos, calculadora ecológica e mais.",
+  icons: {
+    icon: "/eco-favicon.ico", // nome do arquivo que você salvou
+    shortcut: "/eco-favicon.ico",
+    apple: "/eco-icon.png",
+    other: {
+      rel: "apple-touch-icon-precomposed",
+      url: "/eco-icon.png",
+    },
+  },
 };
+
 
 export default function RootLayout({
   children,
@@ -29,6 +39,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="bg-green-50">
+      <head>
+        {/* Adicionado para garantir que o favicon seja carregado corretamente */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased text-gray-900 bg-green-50`}
       >

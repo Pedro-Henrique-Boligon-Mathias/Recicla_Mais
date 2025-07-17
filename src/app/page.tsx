@@ -119,25 +119,61 @@ export default function Home() {
 
   return (
     <main className="bg-green-50 min-h-screen text-gray-800 font-sans">
-      {/* Banner */}
-      <section className="relative w-full h-[500px] md:h-[600px] overflow-hidden rounded-b-[60px] md:rounded-b-[80px] bg-green-800 shadow-lg">
-        <Image
-          src="/imagens/Banner.png"
-          alt="Banner Destino Certo"
-          fill
-          className="object-cover object-center opacity-80"
-          priority
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 100vw"
-        />
-        <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-center px-4">
-          <h1 className="text-white text-3xl sm:text-4xl md:text-5xl font-bold drop-shadow-xl mb-4 px-4">
-            Destino Certo: Conectando você a um futuro mais verde 🌿
-          </h1>
-          <p className="text-green-100 max-w-2xl text-base sm:text-lg md:text-xl">
-            Encontre ecopontos, aprenda boas práticas e participe de uma comunidade que faz a diferença.
-          </p>
+      {/* Banner Hero - Versão melhorada */}
+      <section className="relative w-full h-[70vh] min-h-[500px] max-h-[800px] overflow-hidden rounded-b-[60px] md:rounded-b-[80px] shadow-2xl">
+        {/* Imagem de fundo com overlay e parallax effect */}
+        <div className="absolute inset-0">
+          <Image
+            src="/imagens/Banner2.png"
+            alt="Banner Destino Certo"
+            fill
+            className="object-cover object-center motion-safe:group-hover:scale-105 transition-transform duration-700"
+            priority
+            quality={100}
+            sizes="100vw"
+          />
+          {/* Overlay gradiente para melhor contraste */}
+          <div className="absolute inset-0 bg-gradient-to-t from-green-900/90 via-green-800/50 to-green-700/30" />
         </div>
-        <div className="absolute bottom-[-1px] w-full h-[40px] md:h-[60px] bg-[url('/imagens/folhagem.png')] bg-repeat-x bg-bottom" />
+
+        {/* Conteúdo centralizado com efeito de profundidade */}
+        <div className="relative h-full flex flex-col items-center justify-center text-center px-4 z-10">
+          <div className="max-w-5xl mx-auto transform transition-all duration-500 motion-safe:hover:scale-[1.02]">
+            {/* Título principal com efeito de destaque */}
+            <h1 className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight drop-shadow-2xl px-4">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-200 to-green-300">
+                Destino Certo
+              </span>
+              <br />
+              <span className="text-white">Conectando você a um futuro mais verde</span>
+              <span className="ml-3 inline-block animate-wiggle">🌱</span>
+            </h1>
+
+            {/* Subtítulo com espaçamento melhorado */}
+            <p className="text-green-100 text-lg md:text-xl lg:text-2xl max-w-3xl mx-auto mb-10 leading-relaxed font-medium">
+              Encontre ecopontos próximos, aprenda boas práticas e junte-se a uma comunidade que transforma realidades.
+            </p>
+
+            {/* Botões de ação com transição suave */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link 
+                href="/mapa" 
+                className="bg-white text-green-800 hover:bg-emerald-50 font-bold px-8 py-4 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
+                Explorar Ecopontos
+              </Link>
+              <Link 
+                href="/dicas" 
+                className="bg-transparent border-2 border-white text-white hover:bg-white/10 font-bold px-8 py-4 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
+                Saiba Mais
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Elemento decorativo na base */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-[url('/imagens/wave-divider.svg')] bg-cover bg-no-repeat opacity-80 z-20" />
       </section>
 
       {/* Introdução */}
