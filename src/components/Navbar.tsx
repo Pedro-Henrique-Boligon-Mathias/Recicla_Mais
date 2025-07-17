@@ -5,7 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { User, AuthChangeEvent, Session } from "@supabase/supabase-js";
-import { Menu, X } from "lucide-react";
+import { Menu, X, QrCode } from "lucide-react";
+import Image from "next/image";
+import { Dialog } from '@headlessui/react';
+
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -15,6 +18,7 @@ export default function Navbar() {
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [qrCodeOpen, setQrCodeOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -225,6 +229,15 @@ export default function Navbar() {
 
           {/* Botão Mobile */}
           <div className="flex items-center gap-4">
+            {/* Botão QR Code */}
+            <button
+              onClick={() => setQrCodeOpen(true)}
+              className="hidden md:flex items-center justify-center p-2 text-white hover:bg-white/10 rounded-full transition-colors"
+              title="Compartilhar via QR Code"
+            >
+              <QrCode size={20} />
+            </button>
+
             <button 
               className="md:hidden text-white p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -304,6 +317,50 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* Modal do QR Code */}
+      <Dialog
+        open={qrCodeOpen}
+        onClose={() => setQrCodeOpen(false)}
+        className="relative z-50"
+      >
+        {/* Fundo escuro */}
+        <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+                
+        {/* Conteúdo do modal */}
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-sm rounded-xl bg-white p-6">
+            <Dialog.Title className="text-xl font-bold text-green-800 mb-4">
+              Compartilhe esta página
+            </Dialog.Title>
+                    
+            <div className="flex flex-col items-center">
+              <div className="mb-4 p-2 bg-white rounded-lg border border-gray-200">
+                <img
+                  src="/QRcode.jpg"
+                  alt="QR Code da página"
+                  className="w-full h-auto max-w-[200px]"
+                  onError={(e) => {
+                    console.error("Erro ao carregar QR Code", e);
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+                
+              <p className="text-sm text-gray-600 mb-4 text-center">
+                Escaneie este QR Code para acessar esta página rapidamente
+              </p>
+                
+              <button
+                onClick={() => setQrCodeOpen(false)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
       {/* Menu Mobile */}
       {mobileMenuOpen && (
         <div 
@@ -311,6 +368,18 @@ export default function Navbar() {
           className="fixed top-20 left-1/2 transform -translate-x-1/2 z-40 bg-green-700/95 backdrop-blur-md rounded-xl shadow-lg w-[90%] max-w-md py-4 px-6"
         >
           <div className="flex flex-col space-y-2">
+            {/* Botão QR Code no mobile */}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setQrCodeOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-3 rounded-lg text-white font-medium hover:bg-white/10"
+            >
+              <QrCode size={18} />
+              Compartilhar via QR Code
+            </button>
+
             {navLinks.map((link) => (
               <Link
                 key={link.href}
